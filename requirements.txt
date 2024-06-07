@@ -3,3 +3,6 @@ uvicorn
 boto3
 python-multipart
 python-dotenv
+python-jose[cryptography]
+cffi
+paho-mqtt

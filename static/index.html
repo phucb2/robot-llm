@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ESP32 Web Server</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" type="text/css" href="static/style.css">
+  <!-- Script tag to include the JavaScript file -->
+  <script src="static/script.js"></script>
+</head>
+<body>
+  <div class="header">
+    <h1>Ultron Controller</h1>
+    <img id="controller-image" src="static/ultron-icon.jpeg">
+  </div>
+  <div class="camera-interface">
+    <div class="top-bar">
+      <label class="toggle-switch">
+        <input type="checkbox" id="flashToggle">
+        <span class="slider"></span>
+      </label>
+      <div class="camera-option">Real time CAM</div>
+    </div>
+    <div class="camera-view">
+      <img id="camera-stream" src="/stream">
+    </div>
+    <button class="capture-button">Capture</button>
+  </div>
+
+  <div id="controller-container">
+    <div id="controller" style="position: relative; width: 200px; height: 200px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
+      <button id="forward" class="button">&#9650;</button>    <!-- Upwards triangle -->
+      <button id="left" class="button">&#9664;</button>  <!-- Leftwards triangle -->
+      <button id="right" class="button">&#9654;</button> <!-- Rightwards triangle -->
+      <button id="backward" class="button">&#9660;</button>  <!-- Downwards triangle -->
+    </div>
+    <div id="uniqueController" style="position: relative; margin-left:400px; width: 200px; height: 200px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
+      <button id="uniqueUp" class="uniqueButton">&#9650;</button> <!-- Triangle -->
+      <button id="uniqueLeft" class="uniqueButton">&#9632;</button> <!-- Square -->
+      <button id="uniqueRight" class="uniqueButton">&#9675;</button> <!-- Circle -->
+      <button id="uniqueDown" class="uniqueButton">&#10006;</button> <!-- Cross -->
+    </div>
+  </div>  
+  <!-- <p>GPIO state: <strong> %STATE%</strong></p>
+  <p><a href="/on"><button class="btn">ON</button></a></p>
+  <p><a href="/off"><button class="btn off">OFF</button></a></p> -->
+</body>
+</html>

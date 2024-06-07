@@ -1,3 +1,6 @@
 .env
 
 temp/*
+
+# ignore pyc
+*.pyc

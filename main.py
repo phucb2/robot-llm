@@ -135,10 +135,9 @@ class RobotController:
         # check if the client is connected otherwise exit
         self.client.loop_start()
     
-    def send_command(self, direction: Direction):
-        command = Command("move", direction.value)
+    def send_command(self, cmd: Command):
         # convert command to json and publish to the topic
-        data = json.dumps(command.__dict__)
+        data = json.dumps(cmd.__dict__)
         self.client.publish(topic, data)
     
 
@@ -148,7 +147,7 @@ async def move_robot(direction: str):
     if direction not in Direction.__members__:
         raise HTTPException(status_code=400, detail="Invalid direction")
     # Move the robot in the specified direction
-    controller.send_command(Direction(direction)) 
+    controller.send_command(Command("move", direction))
     return {"direction": direction}
 
 # Flashlight command, on/off

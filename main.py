@@ -10,6 +10,19 @@ from pathlib import Path
 import uuid
 from dotenv import load_dotenv
 import os
+import random
+from paho.mqtt import client as mqtt_client
+from enum import Enum
+from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, FastAPI, HTTPException, status
+from jose import JWTError, jwt
+import json
+import uvicorn
+import warnings
+from logger_config import logger
+warnings.filterwarnings("ignore")
+
+import paho.mqtt.client as mqtt
 
 app = FastAPI()
 
@@ -22,6 +35,8 @@ AWS_S3_BUCKET_NAME = os.getenv('AWS_S3_BUCKET_NAME')
 AWS_REGION = os.getenv('AWS_REGION')
 USERNAME = os.getenv('USERNAME')
 PASSWORD = os.getenv('PASSWORD')
+
+logger.info("This is a new message")
 
 s3_client = boto3.client(
     's3',
@@ -57,10 +72,6 @@ async def login_for_access_token(credentials: HTTPBasicCredentials = Depends(sec
     token = jwt.encode(data, "secret")
     return {"access_token": token, "token_type": "bearer"}
 
-from fastapi.security import OAuth2PasswordBearer
-from fastapi import Depends, FastAPI, HTTPException, status
-from jose import JWTError, jwt
-
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -86,14 +97,12 @@ async def get_current_user(token: str = Depends(authenticate)):
 
 # Robot direction move
 # Enum for robot directions
-from enum import Enum
-
 class Direction(str, Enum):
     forward = "forward"
     backward = "backward"
     left = "left"
     right = "right"
-    
+
 broker = os.getenv('BROKER')
 port = int(os.getenv('PORT'))
 topic = os.getenv('TOPIC')
@@ -101,12 +110,8 @@ mqtt_username = os.getenv('MQTT_USERNAME')
 mqtt_password = os.getenv('MQTT_PASSWORD')
 print(f"Broker: {broker}, Port: {port}, Topic: {topic}, Username: {mqtt_username}, Password: {mqtt_password}")
 
-import random
-from paho.mqtt import client as mqtt_client
-import paho.mqtt.client as mqtt
-
 client_id = f'python-mqtt-{random.randint(0, 1000)}'
-    
+
 def connect_mqtt():
     def on_connect(client, userdata, flags, rc):
         if rc == 0:
@@ -127,7 +132,6 @@ class Command:
         self.command = command
         self.value = value
 
-import json
 
 class RobotController:
     def __init__(self):
@@ -139,7 +143,6 @@ class RobotController:
         # convert command to json and publish to the topic
         data = json.dumps(cmd.__dict__)
         self.client.publish(topic, data)
-    
 
 @app.post("/cmd/move/")
 async def move_robot(direction: str):
@@ -159,6 +162,12 @@ async def flashlight(status: str):
     # Send the flashlight command
     controller.send_command(Command("flashlight", status))
     return {"status": status}
+
+@app.post("/cmd/capture/jpg")
+async def capture_jpg():
+    # Send the capture command
+    controller.send_command(Command("capture", "jpg"))
+    return {"message": "Capturing image in JPG format"}
 
 @app.post("/upload/")
 async def upload_file(file: UploadFile = File(...), credentials: HTTPBasicCredentials = Depends(security)):
@@ -188,5 +197,4 @@ async def upload_file(file: UploadFile = File(...), credentials: HTTPBasicCreden
 controller = RobotController()
 
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

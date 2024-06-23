@@ -71,13 +71,13 @@ p {
     cursor: pointer;
 }
 
-#up {
+#forward {
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
 }
 
-#down {
+#backward {
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);

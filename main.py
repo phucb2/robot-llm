@@ -108,7 +108,6 @@ port = int(os.getenv('PORT'))
 topic = os.getenv('TOPIC')
 mqtt_username = os.getenv('MQTT_USERNAME')
 mqtt_password = os.getenv('MQTT_PASSWORD')
-print(f"Broker: {broker}, Port: {port}, Topic: {topic}, Username: {mqtt_username}, Password: {mqtt_password}")
 
 client_id = f'python-mqtt-{random.randint(0, 1000)}'
 
@@ -149,8 +148,9 @@ async def move_robot(direction: str):
     # Check if the direction is valid
     if direction not in Direction.__members__:
         raise HTTPException(status_code=400, detail="Invalid direction")
+    simple_action = direction[0].upper(); # F, B, L, R
     # Move the robot in the specified direction
-    controller.send_command(Command("move", direction))
+    controller.send_command(Command("move", simple_action))
     return {"direction": direction}
 
 # Flashlight command, on/off

@@ -130,6 +130,11 @@ def connect_mqtt():
     client.connect(broker, port)
     return client
 
+# Check status of server
+@app.get("/status/")
+async def status():
+    return {"status": "ok"}
+
 @app.post("/cmd/move/")
 async def move_robot(direction: str):
     # Check if the direction is valid

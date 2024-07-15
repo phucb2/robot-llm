@@ -1,6 +1,8 @@
 .env
 
 temp/*
+# exclude scripts folder
+scripts/*
 
 # ignore pyc
 *.pyc

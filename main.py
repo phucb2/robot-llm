@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, WebSocket
 from fastapi.responses import FileResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
@@ -18,8 +18,12 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from jose import JWTError, jwt
 import json
 import uvicorn
-import warnings
+
 from logger_config import logger
+from controller.robot import RobotController, Command
+
+# warning; this is a temporary solution to suppress warnings
+import warnings
 warnings.filterwarnings("ignore")
 
 import paho.mqtt.client as mqtt
@@ -106,6 +110,7 @@ class Direction(str, Enum):
 broker = os.getenv('BROKER')
 port = int(os.getenv('PORT'))
 topic = os.getenv('TOPIC')
+feedback_topic = os.getenv('FEEDBACK_TOPIC', topic)
 mqtt_username = os.getenv('MQTT_USERNAME')
 mqtt_password = os.getenv('MQTT_PASSWORD')
 
@@ -125,24 +130,6 @@ def connect_mqtt():
     client.connect(broker, port)
     return client
 
-# Command DTO (Data Transfer Object)
-class Command:
-    def __init__(self, command: str, value: str):
-        self.command = command
-        self.value = value
-
-
-class RobotController:
-    def __init__(self):
-        self.client = connect_mqtt()
-        # check if the client is connected otherwise exit
-        self.client.loop_start()
-    
-    def send_command(self, cmd: Command):
-        # convert command to json and publish to the topic
-        data = json.dumps(cmd.__dict__)
-        self.client.publish(topic, data)
-
 @app.post("/cmd/move/")
 async def move_robot(direction: str):
     # Check if the direction is valid
@@ -152,6 +139,29 @@ async def move_robot(direction: str):
     # Move the robot in the specified direction
     controller.send_command(Command("move", simple_action))
     return {"direction": direction}
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        try:
+            if data == "forward":
+                controller.move_forward()
+            elif data == "backward":
+                controller.move_backward()
+            elif data == "left":
+                controller.turn_left()
+            elif data == "right":
+                controller.turn_right()
+            elif data == "stop":
+                controller.stop()
+            # Add more commands as needed
+            await websocket.send_text(f"Command executed: {data}")
+        except Exception as e:
+            print(f"Error executing command {data}: {e}")
+            await websocket.close(code=1011)
+            break
 
 # Flashlight command, on/off
 @app.post("/cmd/flashlight/")
@@ -194,7 +204,12 @@ async def upload_file(file: UploadFile = File(...), credentials: HTTPBasicCreden
         print(e)
         raise HTTPException(status_code=500, detail="An error occurred while uploading the file")
 
-controller = RobotController()
+try:
+    controller = RobotController(connect_mqtt(), topic, feedback_topic)
+except Exception as e:
+    print(f"Error initializing the robot controller: {e}")
+    exit(-1)
 
 if __name__ == "__main__":
+    
     uvicorn.run(app, host="0.0.0.0", port=8000)

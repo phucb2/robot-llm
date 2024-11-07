@@ -177,6 +177,20 @@ async def flashlight(status: str):
     # Send the flashlight command
     controller.send_command(Command("flashlight", status))
     return {"status": status}
+s
+@app.post("/cmd/oxygen/")
+async def oxygen(status: str):
+    if status not in ["on", "off"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    controller.send_command(Command("oxygen", status))
+    return {"status": status}
+
+@app.post("/cmd/filter/")
+async def filter(status: str):
+    if status not in ["on", "off"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    controller.send_command(Command("filter", status))
+    return {"status": status}
 
 @app.post("/cmd/capture/jpg")
 async def capture_jpg():

@@ -177,7 +177,7 @@ async def flashlight(status: str):
     # Send the flashlight command
     controller.send_command(Command("flashlight", status))
     return {"status": status}
-s
+
 @app.post("/cmd/oxygen/")
 async def oxygen(status: str):
     if status not in ["on", "off"]:

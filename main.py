@@ -19,7 +19,7 @@ from jose import JWTError, jwt
 import json
 import uvicorn
 
-from logger_config import logger
+from app.logger_config import logger
 from controller.robot import RobotController, Command
 
 # warning; this is a temporary solution to suppress warnings
@@ -65,6 +65,10 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.get("/")
 async def read_index():
     return FileResponse("static/index.html")
+
+@app.get("/aquarium")
+async def read_aquarium():
+    return FileResponse("static/aquarium.html")
 
 @app.post("/token/")
 async def login_for_access_token(credentials: HTTPBasicCredentials = Depends(security)):
@@ -223,11 +227,11 @@ async def upload_file(file: UploadFile = File(...), credentials: HTTPBasicCreden
         print(e)
         raise HTTPException(status_code=500, detail="An error occurred while uploading the file")
 
-try:
-    controller = RobotController(connect_mqtt(), topic, feedback_topic)
-except Exception as e:
-    print(f"Error initializing the robot controller: {e}")
-    exit(-1)
+# try:
+#     controller = RobotController(connect_mqtt(), topic, feedback_topic)
+# except Exception as e:
+#     print(f"Error initializing the robot controller: {e}")
+#     exit(-1)
 
 if __name__ == "__main__":
     

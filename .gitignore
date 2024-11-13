@@ -3,6 +3,7 @@
 temp/*
 # exclude scripts folder
 scripts/*
+__pycache__/*
 
 # ignore pyc
 *.pyc

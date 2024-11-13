@@ -1,6 +1,6 @@
 # Description: Makefile for the project
 debug:
-	uvicorn --reload --log-level debug --reload-dir . main:app
+	uvicorn --reload --log-level debug --reload-dir . app.main:app
 
 
 unittest:

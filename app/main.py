@@ -37,10 +37,10 @@ def init():
     from .services.mqtt import connect_mqtt, topic, feedback_topic
     try:
         controller = RobotController(connect_mqtt(), topic, feedback_topic)
+        print("Robot controller initialized")
     except Exception as e:
         print(f"Error initializing the robot controller: {e}")
     
 
 if __name__ == "__main__":
-    
     uvicorn.run(app, host="0.0.0.0", port=8000)

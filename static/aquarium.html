@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aquarium Controller</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="bg-white rounded-lg shadow-lg p-8 w-96">
+        <h1 class="text-3xl font-bold mb-6 text-center text-blue-600">Aquarium Controller</h1>
+        
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <span class="text-lg">Oxygen</span>
+                <label class="switch">
+                    <input type="checkbox" id="oxygenToggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <span class="text-lg">Filter system</span>
+                <label class="switch">
+                    <input type="checkbox" id="filterToggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            
+            <button id="feedButton" class="w-full bg-green-500 text-white py-2 rounded-lg text-lg font-semibold hover:bg-green-600 transition duration-300">Feed</button>
+        </div>
+    </div>
+
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+
+    <script>
+        const oxygenToggle = document.getElementById('oxygenToggle');
+        const filterToggle = document.getElementById('filterToggle');
+        const feedButton = document.getElementById('feedButton');
+
+        oxygenToggle.addEventListener('change', () => {
+            console.log('Oxygen system:', oxygenToggle.checked ? 'ON' : 'OFF');
+        });
+
+        filterToggle.addEventListener('change', () => {
+            console.log('Filter system:', filterToggle.checked ? 'ON' : 'OFF');
+        });
+
+        feedButton.addEventListener('click', () => {
+            console.log('Feeding the fish');
+            feedButton.textContent = 'Feeding...';
+            setTimeout(() => {
+                feedButton.textContent = 'Feed';
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

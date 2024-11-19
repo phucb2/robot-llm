@@ -1,5 +1,6 @@
 import unittest
 
+
 class TestRobotController(unittest.TestCase):
     def test_move(self):
         self.fail("Not implemented")

@@ -1,29 +1,28 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, WebSocket
-from fastapi.responses import FileResponse
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from fastapi.staticfiles import StaticFiles
-from jose import jwt
-from datetime import datetime, timedelta
-import boto3
-from botocore.exceptions import NoCredentialsError, PartialCredentialsError
-from pathlib import Path
-import uuid
-from dotenv import load_dotenv
+import json
 import os
 import random
-from paho.mqtt import client as mqtt_client
-from enum import Enum
-from fastapi.security import OAuth2PasswordBearer
-from fastapi import Depends, FastAPI, HTTPException, status
-from jose import JWTError, jwt
-import json
-import uvicorn
-
-from app.logger_config import logger
-from controller.robot import RobotController, Command
+import uuid
 
 # warning; this is a temporary solution to suppress warnings
 import warnings
+from datetime import datetime, timedelta
+from enum import Enum
+from pathlib import Path
+
+import boto3
+import uvicorn
+from botocore.exceptions import NoCredentialsError, PartialCredentialsError
+from controller.robot import Command, RobotController
+from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, File, HTTPException, UploadFile, WebSocket, status
+from fastapi.responses import FileResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer
+from fastapi.staticfiles import StaticFiles
+from jose import JWTError, jwt
+from paho.mqtt import client as mqtt_client
+
+from app.logger_config import logger
+
 warnings.filterwarnings("ignore")
 
 import paho.mqtt.client as mqtt
@@ -33,23 +32,24 @@ app = FastAPI()
 # Load environment variables from .env file
 load_dotenv()
 
-AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
-AWS_S3_BUCKET_NAME = os.getenv('AWS_S3_BUCKET_NAME')
-AWS_REGION = os.getenv('AWS_REGION')
-USERNAME = os.getenv('USERNAME')
-PASSWORD = os.getenv('PASSWORD')
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_S3_BUCKET_NAME = os.getenv("AWS_S3_BUCKET_NAME")
+AWS_REGION = os.getenv("AWS_REGION")
+USERNAME = os.getenv("USERNAME")
+PASSWORD = os.getenv("PASSWORD")
 
 logger.info("This is a new message")
 
 s3_client = boto3.client(
-    's3',
+    "s3",
     region_name=AWS_REGION,
     aws_access_key_id=AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
 )
 
 security = HTTPBasic()
+
 
 def authenticate(credentials: HTTPBasicCredentials):
     if credentials.username != USERNAME or credentials.password != PASSWORD:
@@ -59,23 +59,27 @@ def authenticate(credentials: HTTPBasicCredentials):
             headers={"WWW-Authenticate": "Basic"},
         )
 
+
 # Mount the static files directory
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 @app.get("/")
 async def read_index():
     return FileResponse("static/index.html")
 
+
 @app.get("/aquarium")
 async def read_aquarium():
     return FileResponse("static/aquarium.html")
+
 
 @app.post("/token/")
 async def login_for_access_token(credentials: HTTPBasicCredentials = Depends(security)):
     authenticate(credentials)
     data = {
         "sub": credentials.username,
-        "exp": datetime.utcnow() + timedelta(minutes=15)
+        "exp": datetime.utcnow() + timedelta(minutes=15),
     }
     token = jwt.encode(data, "secret")
     return {"access_token": token, "token_type": "bearer"}
@@ -83,9 +87,11 @@ async def login_for_access_token(credentials: HTTPBasicCredentials = Depends(sec
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+
 class TokenData:
     def __init__(self, username: str):
         self.username = username
+
 
 async def get_current_user(token: str = Depends(authenticate)):
     credentials_exception = HTTPException(
@@ -103,6 +109,7 @@ async def get_current_user(token: str = Depends(authenticate)):
         raise credentials_exception
     return token_data
 
+
 # Robot direction move
 # Enum for robot directions
 class Direction(str, Enum):
@@ -111,14 +118,16 @@ class Direction(str, Enum):
     left = "left"
     right = "right"
 
-broker = os.getenv('BROKER')
-port = int(os.getenv('PORT'))
-topic = os.getenv('TOPIC')
-feedback_topic = os.getenv('FEEDBACK_TOPIC', topic)
-mqtt_username = os.getenv('MQTT_USERNAME')
-mqtt_password = os.getenv('MQTT_PASSWORD')
 
-client_id = f'python-mqtt-{random.randint(0, 1000)}'
+broker = os.getenv("BROKER")
+port = int(os.getenv("PORT"))
+topic = os.getenv("TOPIC")
+feedback_topic = os.getenv("FEEDBACK_TOPIC", topic)
+mqtt_username = os.getenv("MQTT_USERNAME")
+mqtt_password = os.getenv("MQTT_PASSWORD")
+
+client_id = f"python-mqtt-{random.randint(0, 1000)}"
+
 
 def connect_mqtt():
     def on_connect(client, userdata, flags, rc):
@@ -134,20 +143,24 @@ def connect_mqtt():
     client.connect(broker, port)
     return client
 
+
 # Check status of server
 @app.get("/status/")
 async def status():
     return {"status": "ok"}
+
 
 @app.post("/cmd/move/")
 async def move_robot(direction: str):
     # Check if the direction is valid
     if direction not in Direction.__members__:
         raise HTTPException(status_code=400, detail="Invalid direction")
-    simple_action = direction[0].upper(); # F, B, L, R
+    simple_action = direction[0].upper()
+    # F, B, L, R
     # Move the robot in the specified direction
     controller.send_command(Command("move", simple_action))
     return {"direction": direction}
+
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -172,6 +185,7 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.close(code=1011)
             break
 
+
 # Flashlight command, on/off
 @app.post("/cmd/flashlight/")
 async def flashlight(status: str):
@@ -182,12 +196,14 @@ async def flashlight(status: str):
     controller.send_command(Command("flashlight", status))
     return {"status": status}
 
+
 @app.post("/cmd/oxygen/")
 async def oxygen(status: str):
     if status not in ["on", "off"]:
         raise HTTPException(status_code=400, detail="Invalid status")
     controller.send_command(Command("oxygen", status))
     return {"status": status}
+
 
 @app.post("/cmd/filter/")
 async def filter(status: str):
@@ -196,14 +212,18 @@ async def filter(status: str):
     controller.send_command(Command("filter", status))
     return {"status": status}
 
+
 @app.post("/cmd/capture/jpg")
 async def capture_jpg():
     # Send the capture command
     controller.send_command(Command("capture", "jpg"))
     return {"message": "Capturing image in JPG format"}
 
+
 @app.post("/upload/")
-async def upload_file(file: UploadFile = File(...), credentials: HTTPBasicCredentials = Depends(security)):
+async def upload_file(
+    file: UploadFile = File(...), credentials: HTTPBasicCredentials = Depends(security)
+):
     try:
         file_extension = Path(file.filename).suffix
         unique_filename = str(uuid.uuid4()) + file_extension
@@ -212,11 +232,7 @@ async def upload_file(file: UploadFile = File(...), credentials: HTTPBasicCreden
         with open(file_location, "wb") as buffer:
             buffer.write(file.file.read())
 
-        s3_client.upload_file(
-            file_location, 
-            AWS_S3_BUCKET_NAME, 
-            unique_filename
-        )
+        s3_client.upload_file(file_location, AWS_S3_BUCKET_NAME, unique_filename)
 
         Path(file_location).unlink()  # delete the temp file
 
@@ -225,7 +241,10 @@ async def upload_file(file: UploadFile = File(...), credentials: HTTPBasicCreden
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=500, detail="An error occurred while uploading the file")
+        raise HTTPException(
+            status_code=500, detail="An error occurred while uploading the file"
+        )
+
 
 # try:
 #     controller = RobotController(connect_mqtt(), topic, feedback_topic)
@@ -234,5 +253,5 @@ async def upload_file(file: UploadFile = File(...), credentials: HTTPBasicCreden
 #     exit(-1)
 
 if __name__ == "__main__":
-    
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

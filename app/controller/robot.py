@@ -1,11 +1,13 @@
 import json
 from enum import Enum
 
+
 class Direction(str, Enum):
     forward = "forward"
     backward = "backward"
     left = "left"
     right = "right"
+
 
 # Command DTO (Data Transfer Object)
 class Command:
@@ -13,10 +15,12 @@ class Command:
         self.command = command
         self.value = value
 
+
 class RobotController:
     # Singleton instance
     instance = None
 
+    @staticmethod
     def get_instance():
         if RobotController.instance is None:
             raise Exception("RobotController is not initialized")
@@ -28,29 +32,28 @@ class RobotController:
 
         self.action_topic = action_topic
         self.listen_topic = listen_topic
-        
+
         self.client.subscribe(listen_topic)
         # check if the client is connected otherwise exit
         self.client.loop_start()
         RobotController.instance = self
-        
+
     def on_message(self, client, userdata, message):
         print(f"Received `{message.payload.decode()}` from `{message.topic}` topic")
-        
-    
+
     def send_command(self, cmd: Command):
         # convert command to json and publish to the topic
         data = json.dumps(cmd.__dict__)
         self.client.publish(self.action_topic, data)
-        
+
     def move_forward(self):
         self.send_command(Command("move", "F"))
-        
+
     def move_backward(self):
         self.send_command(Command("move", "B"))
-        
+
     def turn_left(self):
         self.send_command(Command("move", "L"))
-        
+
     def turn_right(self):
         self.send_command(Command("move", "R"))

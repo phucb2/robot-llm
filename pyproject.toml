@@ -6,7 +6,7 @@ authors = ["phbui <phuc.bui@agoda.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.9"
 fastapi = "^0.115.5"
 uvicorn = "^0.32.0"
 boto3 = "^1.35.59"
@@ -15,7 +15,28 @@ python-dotenv = "^1.0.1"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 cffi = "^1.17.1"
 paho-mqtt = "^2.1.0"
+black = "^24.10.0"
+flake8 = "^7.1.1"
+isort = "^5.13.2"
 
+[tool.black]
+line-length = 88
+target-version = ['py39']
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.pytest_cache
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
 
 [build-system]
 requires = ["poetry-core"]

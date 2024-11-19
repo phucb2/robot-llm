@@ -4,14 +4,15 @@ import random
 import paho.mqtt.client as mqtt
 from paho.mqtt import client as mqtt_client
 
-broker = os.getenv('BROKER')
-port = int(os.getenv('PORT'))
-topic = os.getenv('TOPIC')
-feedback_topic = os.getenv('FEEDBACK_TOPIC', topic)
-mqtt_username = os.getenv('MQTT_USERNAME')
-mqtt_password = os.getenv('MQTT_PASSWORD')
+broker = os.getenv("BROKER")
+port = int(os.getenv("PORT"))
+topic = os.getenv("TOPIC")
+feedback_topic = os.getenv("FEEDBACK_TOPIC", topic)
+mqtt_username = os.getenv("MQTT_USERNAME")
+mqtt_password = os.getenv("MQTT_PASSWORD")
 
-client_id = f'python-mqtt-{random.randint(0, 1000)}'
+client_id = f"python-mqtt-{random.randint(0, 1000)}"
+
 
 def connect_mqtt():
     def on_connect(client, userdata, flags, rc):

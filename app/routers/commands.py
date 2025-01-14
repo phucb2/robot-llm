@@ -38,6 +38,14 @@ async def flashlight(status: str):
     controller().send_command(Command("flashlight", status))
     return {"status": status}
 
+@router.post("/custom/")
+async def custom(command: str, status: str):
+    # Check if the status is valid
+    if status not in ["on", "off"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    # Send the flashlight command
+    controller().send_command(Command(command, status))
+    return {"status": status}
 
 @router.post("/oxygen/")
 async def oxygen(status: str):

@@ -90,19 +90,69 @@
         const filterToggle = document.getElementById('filterToggle');
         const feedButton = document.getElementById('feedButton');
 
+        const setCommandStaus = (command, state) => {
+            fetch(`/cmd/custom/?status=${state}&command=${command}`, {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.text())
+        };
+
+
+        // Make API request /cmd/oxygen/ with parameters state=on/off
+        const setOxygenState = (state) => {
+            fetch(`/cmd/oxygen/?status=${state}`, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json'
+            }
+            })
+            .then(response => response.text())
+        };
+
+        const setFilterState = (state) => {
+            fetch(`/cmd/filter/?status=${state}`, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json'
+            }
+            })
+            // then log the response text not json
+            .then(response => response.text())
+        };
+
+        // Enum for status
+        const Status = {
+            ON: 'on',
+            OFF: 'off'
+        };
+        
+
         oxygenToggle.addEventListener('change', () => {
             console.log('Oxygen system:', oxygenToggle.checked ? 'ON' : 'OFF');
+            const enabled = oxygenToggle.checked;
+            // Convert boolean to string
+            setOxygenState(enabled ? Status.ON : Status.OFF);
+                
         });
 
         filterToggle.addEventListener('change', () => {
             console.log('Filter system:', filterToggle.checked ? 'ON' : 'OFF');
+            const enabled = filterToggle.checked;
+            // Convert boolean to string
+            setFilterState(enabled ? Status.ON : Status.OFF);
         });
 
         feedButton.addEventListener('click', () => {
             console.log('Feeding the fish');
+            // Call request
+            setCommandStaus('oxygen', 'on');
             feedButton.textContent = 'Feeding...';
             setTimeout(() => {
                 feedButton.textContent = 'Feed';
+                setCommandStaus('oxygen', 'off');
             }, 2000);
         });
     </script>

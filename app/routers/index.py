@@ -6,12 +6,12 @@ router = APIRouter()
 
 @router.get("/")
 async def read_index():
-    return FileResponse("static/index.html")
+    return FileResponse("static/aquarium.html")
 
 
 @router.get("/aquarium")
 async def read_aquarium():
-    return FileResponse("static/aquarium.html")
+    return FileResponse("static/index.html")
 
 
 # Check status of server
